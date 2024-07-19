@@ -11,6 +11,7 @@ langchain = "^0.2.9"
 langchain-community = "^0.2.7"
 beautifulsoup4 = "^4.12.3"
 faiss-cpu = "^1.8.0.post1"
+langgraph = "^0.1.9"
 
 
 [tool.poetry.group.dev.dependencies]
