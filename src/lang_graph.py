@@ -56,7 +56,9 @@ def decide_to_generate(state):
 
 def web_tavily_search(state):
     state["steps"].append("web_tavily_search")
-    web_docs = web_search(query=state["query"])
+    # need to set to string
+    # somehow the evaluator does not pass query as a string
+    web_docs = web_search(query=str(state["query"]))
     state["documents"].extend(web_docs)
     return {
         "query": state["query"],

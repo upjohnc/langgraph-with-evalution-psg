@@ -50,8 +50,8 @@ GROUND TRUTH ANSWER: {correct_answer}
 
 STUDENT ANSWER: {student_answer}
 
-Grade the quiz based upon the above criteria with a score and your explanation for the score.
-Provide the response in a JSON with a key 'score' for the score and a key 'explanation' for the explanation.
+Grade the quiz based upon the above criteria with a score.
+Provide the response in a JSON with a key 'score' for the score.
 Respond only with the JSON repsonse.
 
 """
@@ -69,7 +69,7 @@ def create_dataset(client: Client):
     if not client.has_dataset(dataset_name=dataset_name):
         dataset = client.create_dataset(dataset_name)
         inputs, outputs = zip(
-            *[({"query": text}, {"output": label}) for text, label in examples]
+            *[({"input": text}, {"output": label}) for text, label in examples]
         )
         _ = client.create_examples(
             inputs=inputs, outputs=outputs, dataset_id=dataset.id
@@ -77,7 +77,7 @@ def create_dataset(client: Client):
 
 
 def answer_evaluator(run, example) -> dict:
-    input_question = example.inputs["query"]
+    input_question = example.inputs["input"]
     reference = example.outputs["output"]
     prediction = run.outputs
 
