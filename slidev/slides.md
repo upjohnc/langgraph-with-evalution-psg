@@ -3,14 +3,8 @@
 theme: seriph
 # random image from a curated Unsplash collection by Anthony
 # like them? see https://unsplash.com/collections/94734566/slidev
-background: https://cover.sli.dev
 # some information about your slides (markdown enabled)
-title: Welcome to Slidev
-info: |
-  ## Slidev Starter Template
-  Presentation slides for developers.
-
-  Learn more at [Sli.dev](https://sli.dev)
+title: PSG - Langchain
 # apply unocss classes to the current slide
 class: text-center
 # https://sli.dev/features/drawing
@@ -36,32 +30,19 @@ The last comment block of each slide will be treated as slide notes. It will be 
 
 
 ---
-layout: two-cols
-layoutClass: gap-16
----
-
-# Table of contents
-
-You can use the `Toc` component to generate a table of contents for your slides:
-
-```html
-<Toc minDepth="1" maxDepth="1"></Toc>
-```
-
-The title will be inferred from your slide content, or you can override it with `title` and `level` in your frontmatter.
-
-::right::
-
-<Toc v-click minDepth="1" maxDepth="2"></Toc>
-
----
 ---
 # Langgraph Flow
 
-Flow of llm application
+## Scenario
+
+You have a RAG of documents on delta-rs.<br>
+The vector db will retrieve the closest documents to your query but may not be relevant.<br>
+You add a step to check for relevancy and augment with a web search if needed.
+
+## Flow of llm application
 
 ```mermaid {theme: 'neutral', scale: 0.5}
-graph TD
+graph LR
 A[Start] --> B[Vector Retriever]
 B --> C[Grade Docs Retrieved]
 C --> D{Need Web Search}
@@ -71,6 +52,11 @@ F --> E
 E --> G[End]
 ```
 
+Focus:<br>
+building the graph<br>
+grading docs<br>
+evaluation of application
+
 ---
 layout: two-cols
 layoutClass: gap-16
@@ -78,6 +64,7 @@ layoutClass: gap-16
 # Graph State
 
 ```python {all|1,20}
+# Create state structure
 class GraphState(TypedDict):
     """
     State of lang graph
@@ -96,6 +83,7 @@ class GraphState(TypedDict):
     documents: list[str]
     steps: list[str]
 
+# Set up the langgraph object
 def run_graph(query: str) -> str:
     workflow = StateGraph(GraphState)
     workflow.add_node("vector_retriever", get_vector_store)
@@ -105,11 +93,15 @@ def run_graph(query: str) -> str:
 
 ::right::
 
-```python {all|1,5-9}
-def get_vector_store(state):
+State is passed between nodes of the graph
+
+```python {all|2,7-11}
+# GraphState is passed as a parameter to the function
+def get_vector_store(state: GraphState) -> dict:
     state["steps"].append("get_vector_store")
     vector_store = create_vector_store(get_split_docs())
     retriever = vector_store.as_retriever(search_kwargs={"k": 2})
+    # return a dict that maps to GraphState
     return {
         "query": state["query"],
         "retriever": retriever,
@@ -121,17 +113,25 @@ def get_vector_store(state):
 ---
 # Create DAG
 
-```python {all|2|12|14|15}
+```python {all|2|11-15|20|22}
 def run_graph(query: str) -> str:
     workflow = StateGraph(GraphState)
     workflow.add_node("vector_retriever", get_vector_store)
-...
+    workflow.add_node("doc_grade", check_doc_grade)
+    workflow.add_node("tavily_search", web_tavily_search)
+    workflow.add_node("generate", generate)
+
+    workflow.add_edge(START, "vector_retriever")
+    workflow.add_edge("vector_retriever", "doc_grade")
+
     workflow.add_conditional_edges(
         "doc_grade",
         decide_to_generate,
         {"search": "tavily_search", "generate": "generate"},
     )
-...
+
+    workflow.add_edge("tavily_search", "generate")
+    workflow.add_edge("generate", END)
 
     custom_graph = workflow.compile()
 
@@ -141,32 +141,44 @@ def run_graph(query: str) -> str:
 ```
 ---
 ---
-# Grade Docs
+# Grade Docs (1/2)
 
-```python {all|1|3-9|10|12|none}
-docs = retriever.invoke(question)
+```python {all|2|16-17}
+def grade_docs_for_tavily_search(retriever, question: str) -> tuple[bool, list[Document]]:
+    docs = retriever.invoke(question)
+    ...
+    prompt = ChatPromptTemplate.from_template(
+        """You are a teacher grading a quiz. You will be given:
+        1/ a QUESTION
+        2/ A FACT provided by the student
 
-prompt = ChatPromptTemplate.from_template(
-    """You are a teacher grading a quiz. You will be given:
-...
-    Give a binary score 1 or 0 score to indicate whether the document is relevant to the question. \n
-    Provide the binary score as a JSON with a single key 'score' and no premable or explanation.
-    """
-)
-retrieval_grader = prompt | model | JsonOutputParser()
-...
-return more_search, relevant_docs
+        You are grading RELEVANCE RECALL:
+        A score of 1 means that ANY of the statements in the FACT are relevant to the QUESTION.
+        A score of 0 means that NONE of the statements in the FACT are relevant to the QUESTION.
+        1 is the highest (best) score. 0 is the lowest score you can give.
+
+        Avoid simply stating the correct answer at the outset.
+
+        Question: {question} \n
+        Fact: \n\n {documents} \n\n
+
+        Give a binary score 1 or 0 score to indicate whether the document is relevant to the question. \n
+        Provide the binary score as a JSON with a single key 'score' and no premable or explanation.
+        """
+    )
+    retrieval_grader = prompt | model | JsonOutputParser()
 ```
-```python {none|all}
 
-# return value from grading the docs passed to decision point
-workflow.add_conditional_edges(
-    "doc_grade",
-    decide_to_generate,
-    {"search": "tavily_search", "generate": "generate"},
-)
+---
+---
+# Grade Docs (2/2)
+
+```python {1|4}
+    retrieval_grader = prompt | model | JsonOutputParser()
+    ...
+    more_search = len(relevant_docs) != len(docs)
+    return more_search, relevant_docs
 ```
-
 ---
 ---
 # Evaluation
@@ -221,6 +233,7 @@ def answer_evaluator(run, example) -> dict:
 
 ---
 ---
+
 # Evaluation Call
 
 ```python {all|7-13|8|10}
@@ -238,3 +251,10 @@ def evaluator():
         max_concurrency=1,
     )
 ```
+---
+
+# Langsmith Evaluation
+<br><br>
+
+![image](files://./langsmith.png)
+---

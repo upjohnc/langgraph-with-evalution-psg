@@ -27,14 +27,14 @@ class GraphState(TypedDict):
     steps: list[str]
 
 
-def get_vector_store(state):
+def get_vector_store(state: GraphState) -> dict:
     state["steps"].append("get_vector_store")
     vector_store = create_vector_store(get_split_docs())
     retriever = vector_store.as_retriever(search_kwargs={"k": 2})
     return {"query": state["query"], "retriever": retriever, "steps": state["steps"]}
 
 
-def check_doc_grade(state):
+def check_doc_grade(state: GraphState) -> dict:
     state["steps"].append("check_doc_grade")
     (tavily_search, docs) = grade_docs_for_tavily_search(
         state["retriever"], state["query"]
@@ -48,13 +48,13 @@ def check_doc_grade(state):
     }
 
 
-def decide_to_generate(state):
+def decide_to_generate(state: GraphState) -> dict:
     if state["web_search"] is True:
         return "search"
     return "generate"
 
 
-def web_tavily_search(state):
+def web_tavily_search(state: GraphState) -> dict:
     state["steps"].append("web_tavily_search")
     # need to set to string
     # somehow the evaluator does not pass query as a string
@@ -68,7 +68,7 @@ def web_tavily_search(state):
     }
 
 
-def generate(state):
+def generate(state: GraphState) -> dict:
     state["steps"].append("generate")
     response = get_end_response(state["query"], state["documents"])
     return {
