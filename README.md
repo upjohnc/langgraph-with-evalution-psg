@@ -7,6 +7,13 @@ the vector store are not all relevant.
 It shows how a standard rag can be augmented with other steps.  In this case, a web search
 when the documents that have been split and embedded do not match the user's query.
 
+## Running Locally
+
+There are commands in the `.justfile`.
+
+- `just run`: calls the python code that runs the evaluation of the application
+- `just run search`: calls the python code to run just the search (no evaluation)
+
 ## Graph Steps
 
 - retrieves docs and then checks if all the docs are relevant for the query search
@@ -20,6 +27,6 @@ when the documents that have been split and embedded do not match the user's que
 ## Resources from langchain team
 
 The code example is from langchain and has an accompanying youtube video:
-[Example code from langchain](https://github.com/langchain-ai/langgraph/blob/main/examples/rag/langgraph_crag_local.ipynb)
-[Youtube from langchain](https://youtu.be/E2shqsYwxck?si=3qbn55sbj96tJcid)
 
+- [Example code from langchain](https://github.com/langchain-ai/langgraph/blob/main/examples/rag/langgraph_crag_local.ipynb)
+- [Youtube from langchain](https://youtu.be/E2shqsYwxck?si=3qbn55sbj96tJcid)
