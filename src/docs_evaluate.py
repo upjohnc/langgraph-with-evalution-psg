@@ -22,6 +22,8 @@ def grade_docs_for_tavily_search(
     Returns:
         bool: True if need Tavily search needed
     """
+    docs = retriever.invoke(question)
+
     model = Ollama(model=constants.MODEL)
     prompt = ChatPromptTemplate.from_template(
         """You are a teacher grading a quiz. You will be given:
@@ -42,7 +44,6 @@ def grade_docs_for_tavily_search(
         Provide the binary score as a JSON with a single key 'score' and no premable or explanation.
         """
     )
-    docs = retriever.invoke(question)
     retrieval_grader = prompt | model | JsonOutputParser()
 
     def check_more_search(doc: Document) -> bool:

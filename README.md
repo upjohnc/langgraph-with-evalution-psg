@@ -14,6 +14,22 @@ There are commands in the `.justfile`.
 - `just run`: calls the python code that runs the evaluation of the application
 - `just run search`: calls the python code to run just the search (no evaluation)
 
+## Running Slideshow
+
+cd into `slidev` dir and then run command
+
+```bash
+cd slidev
+npm run dev
+```
+
+## Resources from langchain team
+
+The code example is from langchain and has an accompanying youtube video:
+
+- [Example code from langchain](https://github.com/langchain-ai/langgraph/blob/main/examples/rag/langgraph_crag_local.ipynb)
+- [Youtube from langchain](https://youtu.be/E2shqsYwxck?si=3qbn55sbj96tJcid)
+
 ## Graph Steps
 
 - retrieves docs and then checks if all the docs are relevant for the query search
@@ -24,9 +40,3 @@ There are commands in the `.justfile`.
 
 ![Langgraph](Langgraph.jpg "Langgraph")
 
-## Resources from langchain team
-
-The code example is from langchain and has an accompanying youtube video:
-
-- [Example code from langchain](https://github.com/langchain-ai/langgraph/blob/main/examples/rag/langgraph_crag_local.ipynb)
-- [Youtube from langchain](https://youtu.be/E2shqsYwxck?si=3qbn55sbj96tJcid)
