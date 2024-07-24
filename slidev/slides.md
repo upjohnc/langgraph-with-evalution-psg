@@ -23,11 +23,21 @@ Pinnacle Solutions Group
 Using langchain to augment a RAG <br>
 Using evaluation to unit test the llm application
 
+---
+---
+# What
 
-<!--
-The last comment block of each slide will be treated as slide notes. It will be visible and editable in Presenter Mode along with the slide. [Read more in the docs](https://sli.dev/guide/syntax.html#notes)
--->
+## Langgragh
 
+(from langchain): Library to build stateful, multi-actor applications
+<br>(Chad words): Decision tree to extend an llm application
+- cycles and loops
+- persist state
+- human in the loop
+
+## Evaluation
+
+Testing of application using a defined truth as comparison to response for grading.
 
 ---
 ---
@@ -46,8 +56,8 @@ graph LR
 A[Start] --> B[Vector Retriever]
 B --> C[Grade Docs Retrieved]
 C --> D{Need Web Search}
-D -->|No| E[Generate Complete Response]
-D -->|Yes| F[Tavily Search - Augment RAG Docs]
+D --> | No | E[Generate Complete Response]
+D --> | Yes | F[Tavily Search - Augment RAG Docs]
 F --> E
 E --> G[End]
 ```
@@ -63,7 +73,7 @@ layoutClass: gap-16
 ---
 # Graph State
 
-```python {all|1,20}
+```python {all|2,22}
 # Create state structure
 class GraphState(TypedDict):
     """
@@ -113,7 +123,7 @@ def get_vector_store(state: GraphState) -> dict:
 ---
 # Create DAG
 
-```python {all|2|11-15|20|22}
+```python {all|2|3-15|20|22}
 def run_graph(query: str) -> str:
     workflow = StateGraph(GraphState)
     workflow.add_node("vector_retriever", get_vector_store)
@@ -188,7 +198,7 @@ def grade_docs_for_tavily_search(retriever, question: str) -> tuple[bool, list[D
 - store in langsmith
 
 
-```python {all|2-7|14-15}
+```python {all|2-8|14-16}
 def create_dataset(client: Client):
     examples = [
         ("what's the frequency kenneth?", "Song by REM"),
