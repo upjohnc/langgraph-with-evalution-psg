@@ -23,6 +23,11 @@ cd slidev
 npm run dev
 ```
 
+## Unit test - pytest
+
+In the `unit_test` branch, there is unit test file that
+programmatically checks for successful evaluations.
+
 ## Resources from langchain team
 
 The code example is from langchain and has an accompanying youtube video:
