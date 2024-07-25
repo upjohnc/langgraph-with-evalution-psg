@@ -4,6 +4,7 @@ from langchain_community.chat_models import ChatOllama
 from langchain_core.output_parsers import JsonOutputParser
 from langsmith import Client
 from langsmith.evaluation import evaluate
+from langsmith.schemas import Example, Run
 
 import constants
 import utils
@@ -30,10 +31,10 @@ def create_dataset(client: Client):
         )
 
 
-def answer_evaluator(run, example) -> dict:
+def answer_evaluator(run: Run, example: Example) -> dict:
     input_question = example.inputs["input"]
     reference = example.outputs["output"]
-    prediction = run.outputs
+    prediction = run.outputs["response"]
 
     llm = ChatOllama(model=constants.MODEL)
     answer_grader = utils.create_chat_prompt() | llm | JsonOutputParser()
@@ -48,6 +49,29 @@ def answer_evaluator(run, example) -> dict:
     return {"score": response["score"], "key": "answer_v_reference_score"}
 
 
+expected_steps_1 = [
+    "get_vector_store",
+    "check_doc_grade",
+    "generate",
+]
+
+expected_steps_2 = [
+    "get_vector_store",
+    "check_doc_grade",
+    "web_tavily_search",
+    "generate",
+]
+
+
+def check_steps(run: Run, example: Example) -> dict:
+    tool_calls = run.outputs["steps"]
+    score = 0
+    if tool_calls == expected_steps_1 or tool_calls == expected_steps_2:
+        score = 1
+
+    return {"score": score, "key": "tool_calls_in_correct_order"}
+
+
 def evaluator():
     experiment_prefix = "langgraph-evaluation"
 
@@ -57,7 +81,7 @@ def evaluator():
     _ = evaluate(
         run_graph,
         data=dataset_name,
-        evaluators=[answer_evaluator],
+        evaluators=[answer_evaluator, check_steps],
         experiment_prefix=f"{experiment_prefix}-answer-and-tool-use",
         max_concurrency=1,
     )

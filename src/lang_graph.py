@@ -80,7 +80,7 @@ def generate(state: GraphState) -> dict:
     }
 
 
-def run_graph(query: str) -> str:
+def run_graph(query: str) -> dict:
     workflow = StateGraph(GraphState)
     workflow.add_node("vector_retriever", get_vector_store)
     workflow.add_node("doc_grade", check_doc_grade)
@@ -102,4 +102,4 @@ def run_graph(query: str) -> str:
     custom_graph = workflow.compile()
 
     state_dict = custom_graph.invoke({"query": query, "steps": []})
-    return state_dict["generation"]
+    return {"response": state_dict["generation"], "steps": state_dict["steps"]}
