@@ -8,7 +8,10 @@ pre-commit:
     pre-commit install
 
 run *args:
-    PYTHONPATH=. poetry run python src/code.py {{ args }}
+    PYTHONPATH=./src poetry run python src/code.py {{ args }}
+
+tests *args:
+    PYTHONPATH=./src poetry run pytest . {{ args }}
 
 ollama-start:
     ollama serve
