@@ -1,5 +1,6 @@
 from typing import Any
 
+import pytest_check
 from langsmith.evaluation._runner import ExperimentResults
 from pydantic import BaseModel
 
@@ -77,9 +78,10 @@ def assess_evaluator(
         all_evaluations[j] = results
 
     for evaluation in evaluation_assessments:
-        assert all(
-            [
-                i == evaluation.score_success_value
-                for i in all_evaluations[evaluation.evaluation_name]
-            ]
-        ), evaluation.evaluation_assertion
+        with pytest_check.check:
+            assert all(
+                [
+                    i == evaluation.score_success_value
+                    for i in all_evaluations[evaluation.evaluation_name]
+                ]
+            ), evaluation.evaluation_assertion
