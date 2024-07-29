@@ -12,6 +12,7 @@ langchain-community = "^0.2.7"
 beautifulsoup4 = "^4.12.3"
 faiss-cpu = "^1.8.0.post1"
 langgraph = "^0.1.9"
+pydantic = "^2.8.2"
 
 
 [tool.poetry.group.dev.dependencies]
