@@ -31,12 +31,19 @@ def test_evaluator():
     _ = assess_evaluator(result, all_evaluations)
 
 
-def assess_evaluator(result, evaluation_assessments: list[EvaluationAssessment]):
+def assess_evaluator(
+    result, evaluation_assessments: list[EvaluationAssessment] | None = None
+):
     all_results = []
     for i in result._results:
         for j in i["evaluation_results"]["results"]:
             all_results.append(j)
     evaluation_names = set(i.key for i in all_results)
+
+    if evaluation_assessments is None:
+        evaluation_assessments = [
+            EvaluationAssessment(evaluation_name=i) for i in evaluation_names
+        ]
 
     all_evaluations = {}
     for j in evaluation_names:
