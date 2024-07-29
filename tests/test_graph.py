@@ -1,13 +1,23 @@
 from typing import Any
 
+from langsmith.evaluation._runner import ExperimentResults
 from pydantic import BaseModel
 
 from evaluation import evaluator
 
 
 class EvaluationAssessment(BaseModel):
+    """
+    Attributes of the individual to be used is the parsing of the evaluation
+
+    Attributes:
+        evaluation_name (str): the name of the evaluation from the callable passed to the `evaluate` function
+        score_success_value (Any): the value that the grader llm returns when the evaluation is correct
+        evaluation_assertion (str | None): the string that should be sent when the assertion fails, defaults to the evaluation_name
+    """
+
     evaluation_name: str
-    score_succes_value: Any = 1
+    score_success_value: Any = 1
     evaluation_assertion: str | None = None
 
     def model_post_init(self, _):
@@ -21,7 +31,7 @@ def test_evaluator():
     all_evaluations = [
         EvaluationAssessment(
             evaluation_name="tool_calls_in_correct_order",
-            score_succes_value=1,
+            score_success_value=1,
         ),
         EvaluationAssessment(
             evaluation_name="answer_v_reference_score",
@@ -32,8 +42,23 @@ def test_evaluator():
 
 
 def assess_evaluator(
-    result, evaluation_assessments: list[EvaluationAssessment] | None = None
+    result: ExperimentResults,
+    evaluation_assessments: list[EvaluationAssessment] | None = None,
 ):
+    """Assert that each of the evaluations in a langchain evaluation return correct score.
+
+    Parses the evaluation object that is returned from the langchain `evaluation` function
+    and then asserts that all of the tests for an evaluation has the correct score.
+
+    It assumes that the evaluation has the key of `score` from the grader llm response.
+
+    If no evaluation_assessments are passed then it simply uses the evaulation keys that
+    are set in the evaluation function.  Also the default score is `1`.
+
+    Args:
+        result (ExperimentResults): object that is returned from the langchain evaluate function
+        evaluation_assessments (list[EvaluationAssessment] | None): definition of the individual evaluations in the test run
+    """
     all_results = []
     for i in result._results:
         for j in i["evaluation_results"]["results"]:
@@ -54,7 +79,7 @@ def assess_evaluator(
     for evaluation in evaluation_assessments:
         assert all(
             [
-                i == evaluation.score_succes_value
+                i == evaluation.score_success_value
                 for i in all_evaluations[evaluation.evaluation_name]
             ]
         ), evaluation.evaluation_assertion

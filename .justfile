@@ -11,7 +11,7 @@ run *args:
     PYTHONPATH=./src poetry run python src/code.py {{ args }}
 
 tests *args:
-    PYTHONPATH=./src poetry run pytest . {{ args }}
+    PYTHONPATH=./src poetry run pytest . {{ args }} -v
 
 ollama-start:
     ollama serve
