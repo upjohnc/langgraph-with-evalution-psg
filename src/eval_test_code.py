@@ -4,8 +4,6 @@ import pytest_check
 from langsmith.evaluation._runner import ExperimentResults
 from pydantic import BaseModel
 
-from evaluation import evaluator
-
 
 class EvaluationAssessment(BaseModel):
     """
@@ -24,22 +22,6 @@ class EvaluationAssessment(BaseModel):
     def model_post_init(self, _):
         if self.evaluation_assertion is None:
             self.evaluation_assertion = self.evaluation_name
-
-
-def test_evaluator():
-    result = evaluator()
-
-    all_evaluations = [
-        EvaluationAssessment(
-            evaluation_name="tool_calls_in_correct_order",
-            score_success_value=1,
-        ),
-        EvaluationAssessment(
-            evaluation_name="answer_v_reference_score",
-            evaluation_assertion="Answer v Reference is wrong",
-        ),
-    ]
-    _ = assess_evaluator(result, all_evaluations)
 
 
 def assess_evaluator(

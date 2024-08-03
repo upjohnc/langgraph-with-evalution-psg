@@ -42,8 +42,8 @@ GROUND TRUTH ANSWER: {correct_answer}
 STUDENT ANSWER: {student_answer}
 
 Grade the quiz based upon the above criteria with a score.
-Provide the response in a JSON with a key 'score' for the score.
-Respond only with the JSON repsonse.
+Provide the response in a JSON of the following schema:
+{json_schema}
 
 """
     )

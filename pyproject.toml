@@ -4,6 +4,13 @@ version = "0.1.0"
 description = ""
 authors = ["Chad Upjohn <chad.upjohn@pinnsg.com>"]
 readme = "README.md"
+packages = [{include = "src"}]
+exclude = [
+    "tests",
+    "test_examples",
+    "src/example_code",
+]
+
 
 [tool.poetry.dependencies]
 python = "^3.11"
@@ -24,3 +31,9 @@ pytest-check = "^2.3.1"
 [build-system]
 requires = ["poetry-core"]
 build-backend = "poetry.core.masonry.api"
+
+[tool.pytest.ini_options]
+testpaths = [
+    "tests",
+    "test_examples",
+]
